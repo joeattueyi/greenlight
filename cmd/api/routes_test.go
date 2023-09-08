@@ -18,6 +18,7 @@ var app = &application{
 		Permissions: mock.PermissionModel{},
 		Tokens:      mock.TokenModel{},
 	},
+	mailer: mock.MockMailer{},
 }
 
 func TestRegisterUserHandler(t *testing.T) {
