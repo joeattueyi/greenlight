@@ -16,11 +16,17 @@ var (
 	ErrDuplicateEmail = errors.New("duplicate email")
 )
 
-type UserModel struct {
+type UserModel interface {
+	GetForToken(tokenScope, tokenPlaintext string) (*User, error)
+	Insert(user *User) error
+	GetByEmail(email string) (*User, error)
+	Update(user *User) error
+}
+type DBUserModel struct {
 	DB *sql.DB
 }
 
-func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error) {
+func (m DBUserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error) {
 
 	tokenHash := sha256.Sum256([]byte(tokenPlaintext))
 
@@ -44,7 +50,7 @@ func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error)
 		&user.CreatedAt,
 		&user.Name,
 		&user.Email,
-		&user.Password.hash,
+		&user.Password.Hash,
 		&user.Activated,
 		&user.Version,
 	)
@@ -59,14 +65,14 @@ func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error)
 
 	return &user, nil
 }
-func (m UserModel) Insert(user *User) error {
+func (m DBUserModel) Insert(user *User) error {
 
 	query := `
 		INSERT INTO users (name, email, password_hash, activated)
 		VALUES ($1, $2, $3, $4)
 		RETURNING id, created_at, version`
 
-	args := []interface{}{user.Name, user.Email, user.Password.hash, user.Activated}
+	args := []interface{}{user.Name, user.Email, user.Password.Hash, user.Activated}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
@@ -83,7 +89,7 @@ func (m UserModel) Insert(user *User) error {
 	return nil
 }
 
-func (m UserModel) GetByEmail(email string) (*User, error) {
+func (m DBUserModel) GetByEmail(email string) (*User, error) {
 
 	query := `
 		SELECT id, created_at, name, email, password_hash, activated, version
@@ -100,7 +106,7 @@ func (m UserModel) GetByEmail(email string) (*User, error) {
 		&user.CreatedAt,
 		&user.Name,
 		&user.Email,
-		&user.Password.hash,
+		&user.Password.Hash,
 		&user.Activated,
 		&user.Version,
 	)
@@ -119,7 +125,7 @@ func (m UserModel) GetByEmail(email string) (*User, error) {
 
 }
 
-func (m UserModel) Update(user *User) error {
+func (m DBUserModel) Update(user *User) error {
 
 	query := `
 		UPDATE users
@@ -130,7 +136,7 @@ func (m UserModel) Update(user *User) error {
 	args := []interface{}{
 		user.Name,
 		user.Email,
-		user.Password.hash,
+		user.Password.Hash,
 		user.Activated,
 		user.ID,
 		user.Version,
@@ -161,7 +167,7 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
-	Password  password  `json:"-"`
+	Password  Password  `json:"-"`
 	Activated bool      `json:"activated"`
 	Version   int64     `json:"-"`
 }
@@ -170,25 +176,25 @@ func (u *User) IsAnonymous() bool {
 	return u == AnonymousUser
 }
 
-type password struct {
-	plaintext *string
-	hash      []byte
+type Password struct {
+	Plaintext *string
+	Hash      []byte
 }
 
-func (p *password) Set(plaintextPassword string) error {
+func (p *Password) Set(plaintextPassword string) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12)
 	if err != nil {
 		return err
 	}
 
-	p.plaintext = &plaintextPassword
-	p.hash = hash
+	p.Plaintext = &plaintextPassword
+	p.Hash = hash
 
 	return nil
 }
 
-func (p *password) Matches(plaintextPassword string) (bool, error) {
-	err := bcrypt.CompareHashAndPassword(p.hash, []byte(plaintextPassword))
+func (p *Password) Matches(plaintextPassword string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword(p.Hash, []byte(plaintextPassword))
 	if err != nil {
 		switch {
 		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
@@ -218,11 +224,11 @@ func ValidateUser(v *validator.Validator, user *User) {
 
 	ValidateEmail(v, user.Email)
 
-	if user.Password.plaintext != nil {
-		ValidatePasswordPlaintext(v, *user.Password.plaintext)
+	if user.Password.Plaintext != nil {
+		ValidatePasswordPlaintext(v, *user.Password.Plaintext)
 	}
 
-	if user.Password.hash == nil {
+	if user.Password.Hash == nil {
 		panic("missing password hash for user")
 	}
 

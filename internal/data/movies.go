@@ -40,11 +40,19 @@ func ValidateMovie(v *validator.Validator, movie *Movie) {
 
 }
 
-type MovieModel struct {
+type MovieModel interface {
+	Insert(movie *Movie) error
+	Get(id int64) (*Movie, error)
+	Update(movie *Movie) error
+	Delete(id int64) error
+	GetAll(title string, genres []string, filters Filters) ([]*Movie, Metadata, error)
+}
+
+type DBMovieModel struct {
 	DB *sql.DB
 }
 
-func (m MovieModel) Insert(movie *Movie) error {
+func (m DBMovieModel) Insert(movie *Movie) error {
 
 	query := `
 		INSERT INTO movies (title, year, runtime, genres)
@@ -59,7 +67,7 @@ func (m MovieModel) Insert(movie *Movie) error {
 	return m.DB.QueryRowContext(ctx, query, args...).Scan(&movie.ID, &movie.CreatedAt, &movie.Version)
 }
 
-func (m MovieModel) Get(id int64) (*Movie, error) {
+func (m DBMovieModel) Get(id int64) (*Movie, error) {
 
 	if id < 1 {
 		return nil, ErrRecordNotFound
@@ -97,7 +105,7 @@ func (m MovieModel) Get(id int64) (*Movie, error) {
 	return &movie, nil
 }
 
-func (m MovieModel) Update(movie *Movie) error {
+func (m DBMovieModel) Update(movie *Movie) error {
 
 	query := `
 		UPDATE movies
@@ -130,7 +138,7 @@ func (m MovieModel) Update(movie *Movie) error {
 	return nil
 }
 
-func (m MovieModel) Delete(id int64) error {
+func (m DBMovieModel) Delete(id int64) error {
 	if id < 1 {
 		return ErrRecordNotFound
 	}
@@ -159,7 +167,7 @@ func (m MovieModel) Delete(id int64) error {
 	return nil
 }
 
-func (m MovieModel) GetAll(title string, genres []string, filters Filters) ([]*Movie, Metadata, error) {
+func (m DBMovieModel) GetAll(title string, genres []string, filters Filters) ([]*Movie, Metadata, error) {
 
 	query := fmt.Sprintf(`
 		SELECT count(*) OVER(), id, created_at, title, year, runtime, genres, version

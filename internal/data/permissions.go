@@ -20,11 +20,15 @@ func (p Permissions) Include(code string) bool {
 	return false
 }
 
-type PermissionModel struct {
+type PermissionModel interface {
+	AddForUser(userID int64, codes ...string) error
+	GetAllForUser(userID int64) (Permissions, error)
+}
+type DBPermissionModel struct {
 	DB *sql.DB
 }
 
-func (m PermissionModel) AddForUser(userID int64, codes ...string) error {
+func (m DBPermissionModel) AddForUser(userID int64, codes ...string) error {
 
 	query := `
 		INSERT INTO users_permissions
@@ -37,7 +41,7 @@ func (m PermissionModel) AddForUser(userID int64, codes ...string) error {
 	return err
 }
 
-func (m PermissionModel) GetAllForUser(userID int64) (Permissions, error) {
+func (m DBPermissionModel) GetAllForUser(userID int64) (Permissions, error) {
 
 	query := `
 		SELECT permissions.code

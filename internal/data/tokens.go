@@ -54,11 +54,16 @@ func ValidateTokenPlaintext(v *validator.Validator, tokenPlaintext string) {
 	v.Check(len(tokenPlaintext) == 26, "token", "must be 26 bytes long")
 }
 
-type TokenModel struct {
+type TokenModel interface {
+	New(userID int64, ttl time.Duration, scope string) (*Token, error)
+	Insert(token *Token) error
+	DeleteAllForUser(scope string, userID int64) error
+}
+type DBTokenModel struct {
 	DB *sql.DB
 }
 
-func (m TokenModel) New(userID int64, ttl time.Duration, scope string) (*Token, error) {
+func (m DBTokenModel) New(userID int64, ttl time.Duration, scope string) (*Token, error) {
 
 	token, err := generateToken(userID, ttl, scope)
 	if err != nil {
@@ -69,7 +74,7 @@ func (m TokenModel) New(userID int64, ttl time.Duration, scope string) (*Token, 
 	return token, err
 }
 
-func (m TokenModel) Insert(token *Token) error {
+func (m DBTokenModel) Insert(token *Token) error {
 
 	query := `
 		INSERT INTO tokens (hash, user_id, expiry, scope)
@@ -83,7 +88,7 @@ func (m TokenModel) Insert(token *Token) error {
 	return err
 }
 
-func (m TokenModel) DeleteAllForUser(scope string, userID int64) error {
+func (m DBTokenModel) DeleteAllForUser(scope string, userID int64) error {
 
 	query := `
 		DELETE FROM tokens
