@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func (app *application) serve() error {
+func (app *Application) serve() error {
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", app.config.port),

@@ -10,7 +10,7 @@ import (
 	"greenlight.jattueyi.com/internal/validator"
 )
 
-func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	var input struct {
 		Name     string `json:"name"`
@@ -86,7 +86,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) activateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	var input struct {
 		TokenPlaintext string `json:"token"`

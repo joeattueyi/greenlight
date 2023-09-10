@@ -16,7 +16,7 @@ func TestHealthcheckHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	app := &application{}
+	app := &Application{}
 	app.healthcheckHandler(rr, r)
 
 	rs := rr.Result()

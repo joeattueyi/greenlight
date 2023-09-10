@@ -9,7 +9,7 @@ import (
 	"greenlight.jattueyi.com/internal/validator"
 )
 
-func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	var input struct {
 		Title   string       `json:"title"`
@@ -53,7 +53,7 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 
 }
 
-func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) showMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := app.readIDParam(r)
 	if err != nil {
@@ -79,7 +79,7 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) updateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
@@ -155,7 +155,7 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func (app *application) deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) deleteMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := app.readIDParam(r)
 	if err != nil {
@@ -181,7 +181,7 @@ func (app *application) deleteMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func (app *application) listMovieHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) listMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	var input struct {
 		Title  string

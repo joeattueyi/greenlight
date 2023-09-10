@@ -20,7 +20,7 @@ import (
 
 const version = "1.0.0"
 
-type config struct {
+type Config struct {
 	port int
 	env  string
 	db   struct {
@@ -46,8 +46,8 @@ type config struct {
 	}
 }
 
-type application struct {
-	config config
+type Application struct {
+	config Config
 	logger *jsonlog.Logger
 	models data.Models
 	mailer mailer.IMailer
@@ -56,7 +56,7 @@ type application struct {
 
 func main() {
 
-	var cfg config
+	var cfg Config
 
 	flag.IntVar(&cfg.port, "port", 8080, "API Server Port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
@@ -86,7 +86,7 @@ func main() {
 
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
-	db, err := openDB(cfg)
+	db, err := OpenDB(cfg)
 	if err != nil {
 		logger.PrintFatal(err, nil)
 	}
@@ -109,7 +109,7 @@ func main() {
 		return time.Now().Unix()
 	}))
 
-	app := &application{
+	app := &Application{
 		config: cfg,
 		logger: logger,
 		models: data.NewModels(db),
@@ -141,7 +141,7 @@ func main() {
 	// logger.PrintFatal(err, nil)
 }
 
-func openDB(cfg config) (*sql.DB, error) {
+func OpenDB(cfg Config) (*sql.DB, error) {
 	db, err := sql.Open("postgres", cfg.db.dsn)
 	if err != nil {
 		return nil, err

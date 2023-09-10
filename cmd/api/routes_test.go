@@ -11,7 +11,7 @@ import (
 	"greenlight.jattueyi.com/internal/mock"
 )
 
-var app = &application{
+var app = &Application{
 	models: data.Models{
 		Users:       mock.UserModel{},
 		Movies:      mock.MovieModel{},

@@ -18,7 +18,7 @@ import (
 	"greenlight.jattueyi.com/internal/validator"
 )
 
-func (app *application) metrics(next http.Handler) http.Handler {
+func (app *Application) metrics(next http.Handler) http.Handler {
 
 	totalRequestsReceived := expvar.NewInt("total_requests_received")
 	totalResponsesSent := expvar.NewInt("total_responses_sent")
@@ -39,7 +39,7 @@ func (app *application) metrics(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) enableCORS(next http.Handler) http.Handler {
+func (app *Application) enableCORS(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Vary", "Origin")
@@ -69,7 +69,7 @@ func (app *application) enableCORS(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) requirePermission(code string, next http.HandlerFunc) http.HandlerFunc {
+func (app *Application) requirePermission(code string, next http.HandlerFunc) http.HandlerFunc {
 
 	fn := func(w http.ResponseWriter, r *http.Request) {
 
@@ -92,7 +92,7 @@ func (app *application) requirePermission(code string, next http.HandlerFunc) ht
 	return app.requireActivatedUser(fn)
 }
 
-func (app *application) requireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc {
+func (app *Application) requireAuthenticatedUser(next http.HandlerFunc) http.HandlerFunc {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -107,7 +107,7 @@ func (app *application) requireAuthenticatedUser(next http.HandlerFunc) http.Han
 	})
 }
 
-func (app *application) requireActivatedUser(next http.HandlerFunc) http.HandlerFunc {
+func (app *Application) requireActivatedUser(next http.HandlerFunc) http.HandlerFunc {
 	fn := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := app.contextGetUser(r)
 
@@ -122,7 +122,7 @@ func (app *application) requireActivatedUser(next http.HandlerFunc) http.Handler
 	return app.requireAuthenticatedUser(fn)
 }
 
-func (app *application) authenticate(next http.Handler) http.Handler {
+func (app *Application) authenticate(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Vary", "Authorization")
@@ -168,7 +168,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) recoverPanic(next http.Handler) http.Handler {
+func (app *Application) recoverPanic(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -186,7 +186,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) rateLimit(next http.Handler) http.Handler {
+func (app *Application) rateLimit(next http.Handler) http.Handler {
 
 	type client struct {
 		limiter  *rate.Limiter
